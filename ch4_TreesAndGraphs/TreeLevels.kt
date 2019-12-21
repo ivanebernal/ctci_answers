@@ -32,7 +32,7 @@ fun main(args: Array<String>) {
     n5.right = n12
     n6.left = n13
     n6.right = n14
-    val lls = getLevels(n0)
+    val lls = getLevels_DFS(n0)
     for(ll in lls) {
         printLinkedList(ll)
     }
@@ -98,4 +98,23 @@ fun printLinkedList(h: LinkedListNode?) {
         n = n.next
     }
     if(n != null) println("(${n.value})")
+}
+
+// Book Solutions
+
+fun getLevels_DFS(root: TreeNode): List<LinkedListNode> {
+    val result = arrayListOf<LinkedListNode>()
+    createLevels(root, 0, result)
+    return result
+}
+
+fun createLevels(root: TreeNode?, level: Int, lists: ArrayList<LinkedListNode>) {
+    root?:return
+    if(level == lists.size) {
+        lists.add(root.toLinkedListNode())
+    } else {
+        lists[level].addToTail(root.toLinkedListNode())
+    }
+    createLevels(root.left, level + 1, lists)
+    createLevels(root.right, level + 1, lists)
 }
