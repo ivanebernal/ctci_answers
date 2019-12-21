@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - ArrayTripleStackSolution",
+            "request": "launch",
+            "mainClass": "ArrayTripleStackSolution"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Loop",
+            "request": "launch",
+            "mainClass": "Loop"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Intersection",
+            "request": "launch",
+            "mainClass": "Intersection"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Playground",
+            "request": "launch",
+            "mainClass": "Playground"
+        }
+    ]
+}
