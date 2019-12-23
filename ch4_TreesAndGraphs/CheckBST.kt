@@ -33,6 +33,7 @@ fun isBST(root: TreeNode): Boolean {
     return checkOrder(elements)
 }
 
+//This solution has the flaw that, if the right element of a subtree is equal to the root of the subtree, it will count it as BST
 fun inOrder(root: TreeNode?, elements: ArrayList<Int>) {
     root ?: return
     inOrder(root.left, elements)
