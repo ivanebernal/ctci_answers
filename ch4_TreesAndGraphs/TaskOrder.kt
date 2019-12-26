@@ -1,5 +1,11 @@
 import java.util.concurrent.ConcurrentLinkedQueue
+/*
+Compile: 
+kotlinc TaskOrder.kt -include-runtime -d taskorder.jar
+Then try this example:
+java -jar taskorder.jar "a,b,c,d,e,f,g" "(f,c),(f,b),(f,a),(c,a),(b,a),(a,e),(b,e),(d,g)"
 
+ */ 
 fun main(args: Array<String>) {
     if(args.size < 2) {
         println("Please provide 2 arguments: \nfirst one must be a comma separated list of task names\nsecond one must be a coma separated list of dependency pairs, each dependency pair must be inside parentheses and separated by a comma")
@@ -13,38 +19,35 @@ fun main(args: Array<String>) {
 }
 
 fun getProjectOrder(tasks: List<Task>, dependencies: List<Pair<Task, Task>>): List<Task> {
-    val taskMap = hashMapOf<Task, GraphNode>()
-    tasks.forEach { taskMap[it] = GraphNode(it) }
-    dependencies.forEach{ dep ->
-        val task = dep.second
-        val parentTask = dep.first
-        taskMap[task]?.isDependent = true
-        taskMap[task]?.let{taskMap[parentTask]?.neighbors?.add(it)}
-    }
+    val project = getProject(tasks, dependencies)
     val result = arrayListOf<Task>()
-    val entryNodes = taskMap.values.filter { !it.isDependent }
-    if(entryNodes.isEmpty()) throw Error("All tasks are dependent of each other")
-    entryNodes.forEach { taskNode ->
-        visitBFS(taskNode, result)
+    while(!project.entryPoints.isEmpty()) {
+        val next = arrayListOf<Task>()
+        project.entryPoints.forEach { task ->
+            result.add(task)
+            task.neighbors.forEach { neighbor ->
+                neighbor.dependencyCount -= 1
+                if(neighbor.dependencyCount == 0) next.add(neighbor)
+            }
+            project.tasks.remove(task)
+        }
+        project.entryPoints = next
     }
+    if(!project.tasks.isEmpty()) throw Exception("Project cannot be built")
     return result
 }
 
-fun visitBFS(n: GraphNode, order: ArrayList<Task>) {
-    val visitSet = hashSetOf<GraphNode>()
-    val visitQueue = ConcurrentLinkedQueue<GraphNode>()
-    visitQueue.add(n)
-    visitSet.add(n)
-    while(!visitQueue.isEmpty()) {
-        val current = visitQueue.poll()
-        current.neighbors.forEach { 
-            if(!visitSet.contains(it)){
-                visitQueue.add(it)
-                visitSet.add(it)
-            } 
-        }
-        order.add(current.value)
+fun getProject(tasks: List<Task>, dependencies: List<Pair<Task, Task>>): Project {
+    val project = Project()
+    project.tasks.addAll(tasks)
+    dependencies.forEach{ dep ->
+        val parent = project.getTask(dep.first)
+        val child = project.getTask(dep.second)
+        parent.neighbors.add(child)
+        child.dependencyCount += 1
     }
+    project.entryPoints = tasks.filter { it.dependencyCount == 0 }
+    return project
 }
 
 fun parseTasks(listString: String): List<Task> {
@@ -67,10 +70,17 @@ fun parseDependencies(depString: String): List<Pair<Task, Task>> {
     }
 }
 
-class GraphNode(val value: Task) {
-    val neighbors : ArrayList<GraphNode> = arrayListOf()
-    var isDependent = false
+data class Task(val name: String) {
+    val neighbors: ArrayList<Task> = arrayListOf()
+    var dependencyCount = 0
 }
 
-data class Task(val name: String) 
+class Project {
+    val tasks = arrayListOf<Task>()
+    var entryPoints = listOf<Task>()
+
+    fun getTask(task: Task): Task {
+        return tasks.first{ task.name == it.name }
+    }
+}
 
