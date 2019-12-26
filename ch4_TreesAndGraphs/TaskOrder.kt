@@ -29,7 +29,7 @@ fun getProjectOrder(tasks: List<Task>, dependencies: List<Pair<Task, Task>>): Li
                 neighbor.dependencyCount -= 1
                 if(neighbor.dependencyCount == 0) next.add(neighbor)
             }
-            project.tasks.remove(task)
+            project.tasks.remove(task.name)
         }
         project.entryPoints = next
     }
@@ -39,14 +39,14 @@ fun getProjectOrder(tasks: List<Task>, dependencies: List<Pair<Task, Task>>): Li
 
 fun getProject(tasks: List<Task>, dependencies: List<Pair<Task, Task>>): Project {
     val project = Project()
-    project.tasks.addAll(tasks)
+    tasks.forEach { project.tasks[it.name] = it }
     dependencies.forEach{ dep ->
-        val parent = project.getTask(dep.first)
-        val child = project.getTask(dep.second)
+        val parent = project.getTask(dep.first) ?: return@forEach
+        val child = project.getTask(dep.second) ?: return@forEach
         parent.neighbors.add(child)
         child.dependencyCount += 1
     }
-    project.entryPoints = tasks.filter { it.dependencyCount == 0 }
+    project.entryPoints = project.tasks.values.filter { it.dependencyCount == 0 }
     return project
 }
 
@@ -76,11 +76,11 @@ data class Task(val name: String) {
 }
 
 class Project {
-    val tasks = arrayListOf<Task>()
+    val tasks = hashMapOf<String, Task>()
     var entryPoints = listOf<Task>()
 
-    fun getTask(task: Task): Task {
-        return tasks.first{ task.name == it.name }
+    fun getTask(task: Task): Task? {
+        return tasks[task.name]
     }
 }
 
