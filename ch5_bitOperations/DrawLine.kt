@@ -25,8 +25,14 @@ fun drawLine(screen: ByteArray, width: Int, x1: Int, x2: Int, y: Int) {
     val endByte = end / 8
     val endTo = end % 8
     
-    screen[start / 8] = screen[start / 8].and(((1 shl startFrom) - 1).toByte())
-    screen[endByte] = screen[endByte].and(((1 shl (8 - endTo)) - 1).toByte().inv())
+    if(start/8 == endByte) {
+        val mask = (0xFF shr endTo).toByte().or((0xFF shr startFrom).inv().toByte())
+        screen[endByte] = screen[endByte].and(mask)
+    } else {
+        if(startFrom > 0) screen[start / 8] = screen[start / 8].and((0xFF shr startFrom).inv().toByte())
+        if(endTo > 0) screen[endByte] = screen[endByte].and((0xFF shr endTo).toByte())
+    }
+    
 
     for(i in startByte until endByte) {
         screen[i] = 0.toByte()
@@ -34,13 +40,14 @@ fun drawLine(screen: ByteArray, width: Int, x1: Int, x2: Int, y: Int) {
 }
 
 fun printScreen(screen: ByteArray, width: Int) {
+    val mask = 0x80.toByte()
     for((i,byte) in screen.withIndex()) {
         if(i > 0 && (i*8) % width == 0) println()
         var count = 0
         var temp = byte
         while(count < 8) { //>
-            if(temp and 1 == 1.toByte()) print(".") else print(" ")
-            temp = (temp.toInt() shr 1).toByte()
+            if(temp and mask != 0.toByte()) print(".") else print(" ")
+            temp = (temp.toInt() shl 1).toByte()
             count++
         }
     }
