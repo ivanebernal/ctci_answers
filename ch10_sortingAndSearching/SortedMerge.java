@@ -1,5 +1,6 @@
 class SortedMerge {
     public static void main(String[] args) {
+        //NOTE: when there's buffer at the end, try to start going through the end
         Integer[] a = {1,2,4,5,7,null,null,null,null};
         Integer[] b = {3,6,8,9};
         sortedMergeBook(a, b, 5, 4);
