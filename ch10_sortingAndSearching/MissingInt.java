@@ -19,7 +19,7 @@ class MissingInt {
         String filePath = "/Users/ivanebernal/development/ctci/ch10_sortingAndSearching/missingint.txt";
         writeFile(filePath);
         try {
-            findMissingInt(filePath);
+            findMissingIntLessMemory(filePath);
         } catch(FileNotFoundException e) {
             e.printStackTrace();
         } catch(IOException e) {
@@ -28,6 +28,81 @@ class MissingInt {
         
     }
 
+    //Follow up: FROM BOOK
+
+    private static void findMissingIntLessMemory(String path) throws FileNotFoundException, IOException {
+        int rangeSize = (1 << 7);
+        int[] blocks = getCountPerBlock(path, rangeSize);
+
+        int blockIndex = findBlockWithMissingInt(blocks, rangeSize);
+        if(blockIndex < 0) {
+            System.out.println(-1);
+            return; 
+        }
+        byte[] bitVector = getBitVectorForRange(path, blockIndex, rangeSize);
+        int offset = findZero(bitVector);
+
+        if(offset < 0) {
+            System.out.println(-1);
+            return; 
+        }
+
+        System.out.println(blockIndex * rangeSize + offset);
+    }
+
+    private static int[] getCountPerBlock(String path, int rangeSize) throws FileNotFoundException, IOException {
+        int arrSize = ((int) Math.pow(2, 21)) / rangeSize;
+        int[] blocks = new int[arrSize];
+        DataInputStream dis = new DataInputStream(new FileInputStream(path));
+        while(dis.available() != 0) {
+            int nextInt = dis.readInt();
+            blocks[nextInt/rangeSize]++;
+        }
+        dis.close();
+        return blocks;
+    }
+
+    private static int findBlockWithMissingInt(int[] blocks, int rangeSize) {
+        for(int i = 0; i < blocks.length; i++) {
+            if(blocks[i] < rangeSize) return i;
+        }
+        return -1;
+    }
+
+    private static byte[] getBitVectorForRange(String path, int index, int rangeSize) throws FileNotFoundException, IOException {
+        int start = index * rangeSize;
+        int end = start + rangeSize;
+        byte[] vector = new byte[rangeSize/Byte.SIZE];
+        DataInputStream dis = new DataInputStream(new FileInputStream(path));
+        while(dis.available() != 0) {
+            int nextInt = dis.readInt();
+            if(nextInt >= start && nextInt < end) {
+                int offset = nextInt - start;
+                vector[offset/Byte.SIZE] |= 1 << offset % Byte.SIZE;
+            }
+        }
+        dis.close();
+        return vector;
+    }
+
+    private static int findZero(byte[] bitVector) {
+        for(int i = 0; i < bitVector.length; i++) {
+            if(bitVector[i] != ~0) {
+                int offset = findZero(bitVector[i]);
+                return i * Byte.SIZE + offset;
+            }
+        }
+        return -1;
+    }
+
+    private static int findZero(byte b) {
+        for(int i = 0; i < Byte.SIZE; i++) {
+            if((b & 1 << i) == 0) return i;
+        }
+        return -1;
+    }
+
+    // Main question
     private static byte[] bVector = new byte[Integer.MAX_VALUE / 4];
 
     private static void findMissingInt(String path) throws FileNotFoundException, IOException {
