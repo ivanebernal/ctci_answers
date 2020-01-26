@@ -1,13 +1,14 @@
 class SortedMatrixSearch {
     public static void main(String[] args) {
         int[][] mat = new int[][] {
-            new int[] {1, 2, 3, 4},
-            new int[] {5, 6, 7, 8},
-            new int[] {9, 10, 11, 12},
-            new int[] {13, 14, 15, 16},
+            new int[] {15, 20, 70, 85},
+            new int[] {20, 35, 80, 95},
+            new int[] {30, 55, 95, 105},
+            new int[] {40, 80, 100, 120},
         };
-        int n = 11;
+        int n = 95;
         int[] position = findInMatrix(n, mat);
+        if(position[0] == -1) System.out.println("The element " + n + " is not in the matrix.");
         System.out.println("The element " + n + " is at M=" + position[0] + " N=" + position[1]);
     }
 
